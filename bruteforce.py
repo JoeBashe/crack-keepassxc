@@ -1,7 +1,6 @@
 import itertools
 import multiprocessing
 import plac
-import sys
 import time
 
 from pykeepass import PyKeePass
@@ -13,8 +12,11 @@ class PyKeePassBrute:
     MAX_LENGTH = 5
     POOL_SIZE = 3
 
-    def __init__(self):
-        self.filename = sys.argv[1]
+    @plac.annotations(
+        filename=("Path to the Keepass kdbx file", "positional", None, str)
+    )
+    def __init__(self, filename: str):
+        self.filename = filename
 
         # load guesses
         with open("guesses.txt", "r") as f:
@@ -25,7 +27,7 @@ class PyKeePassBrute:
         start = time.perf_counter()
 
         with multiprocessing.Pool(self.POOL_SIZE) as pool:
-            # Use map() to apply the calculate_square function to each element in the input list
+            # Use imap() to apply the check_password method to each element in the input list
             result_iterator = pool.imap(self.check_password, self.passwords())
 
             # Iterate over the results and print them
@@ -60,5 +62,5 @@ class PyKeePassBrute:
 
 
 if __name__ == "__main__":
-    pkpb = PyKeePassBrute()
-    plac.call(pkpb.main)
+    r = plac.call(PyKeePassBrute)
+    r.main()
